@@ -1,4 +1,4 @@
-# newapp
+# flShopApp
 
 A new Flutter project.
 
