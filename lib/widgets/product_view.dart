@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/products.dart';
-import '../models/product.dart';
+import '../providers/product.dart';
 import '../screens/product_detail.dart';
 
 class ProductView extends StatelessWidget {
@@ -17,32 +17,39 @@ class ProductView extends StatelessWidget {
       padding: const EdgeInsets.all(10),
       itemCount: products.length,
       itemBuilder: (context, index) {
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(15),
-          child: GridTile(
-            child: GestureDetector(
-              child: Image.network(
-                products[index].imageUrl,
-                fit: BoxFit.cover,
+        return ChangeNotifierProvider.value(
+          value: products[index],
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(15),
+            child: GridTile(
+              child: GestureDetector(
+                child: Image.network(
+                  products[index].imageUrl,
+                  fit: BoxFit.cover,
+                ),
+                onTap: () => goToProductDetail(context, products[index]),
               ),
-              onTap: () => goToProductDetail(context, products[index]),
-            ),
-            footer: GridTileBar(
-              backgroundColor: Colors.black87,
-              title: Text(
-                products[index].title,
-                overflow: TextOverflow.fade,
-                softWrap: true,
-                style: TextStyle(fontSize: 15),
-                textAlign: TextAlign.center,
-              ),
-              leading: IconButton(
-                icon: Icon(Icons.shopping_cart),
-                onPressed: () {},
-              ),
-              trailing: IconButton(
-                icon: Icon(Icons.favorite),
-                onPressed: () {},
+              footer: GridTileBar(
+                backgroundColor: Colors.black87,
+                title: Text(
+                  products[index].title,
+                  overflow: TextOverflow.fade,
+                  softWrap: true,
+                  style: TextStyle(fontSize: 15),
+                  textAlign: TextAlign.center,
+                ),
+                leading: IconButton(
+                  color: Theme.of(context).accentColor,
+                  icon: Icon(Icons.shopping_cart),
+                  onPressed: () {},
+                ),
+                trailing: Consumer<Product>(
+                  builder: (ctx, product, _) => IconButton(
+                    color: Theme.of(context).accentColor,
+                    icon:  product.isFavorite ?  Icon(Icons.favorite) : Icon(Icons.favorite_border),
+                    onPressed: () => product.toggleFavorite(),
+                  ),
+                ),
               ),
             ),
           ),
