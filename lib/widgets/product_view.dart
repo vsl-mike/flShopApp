@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/products.dart';
+import '../providers/cart.dart';
 import '../providers/product.dart';
 import '../screens/product_detail.dart';
 
@@ -12,6 +13,7 @@ class ProductView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Cart cart = Provider.of<Cart>(context, listen: false);
     List<Product> products = Provider.of<Products>(context).items;
     return GridView.builder(
       padding: const EdgeInsets.all(10),
@@ -41,12 +43,20 @@ class ProductView extends StatelessWidget {
                 leading: IconButton(
                   color: Theme.of(context).accentColor,
                   icon: Icon(Icons.shopping_cart),
-                  onPressed: () {},
+                  onPressed: () {
+                    cart.addCartItem(
+                      products[index].id,
+                      products[index].price,
+                      products[index].title,
+                    );
+                  },
                 ),
                 trailing: Consumer<Product>(
                   builder: (ctx, product, _) => IconButton(
                     color: Theme.of(context).accentColor,
-                    icon:  product.isFavorite ?  Icon(Icons.favorite) : Icon(Icons.favorite_border),
+                    icon: product.isFavorite
+                        ? Icon(Icons.favorite)
+                        : Icon(Icons.favorite_border),
                     onPressed: () => product.toggleFavorite(),
                   ),
                 ),

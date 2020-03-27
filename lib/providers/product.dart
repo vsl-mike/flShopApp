@@ -14,11 +14,11 @@ class Product with ChangeNotifier {
   }
 
   Product({
-    this.id,
-    this.description,
-    this.imageUrl,
-    this.price,
-    this.title,
+    @required this.id,
+    @required this.description,
+    @required this.imageUrl,
+    @required this.price,
+    @required this.title,
     this.isFavorite = false,
   });
 }
