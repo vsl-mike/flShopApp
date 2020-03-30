@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/cart_icon.dart';
 import '../widgets/product_view.dart';
+import '../widgets/drawer.dart';
 
 class ProductsOverviewScreen extends StatelessWidget {
   @override
@@ -12,6 +13,7 @@ class ProductsOverviewScreen extends StatelessWidget {
           CartIcon()
         ],
       ),
+      drawer: AppDrawer(),
       body: ProductView(),
     );
   }
