@@ -57,6 +57,18 @@ class _ProductViewState extends State<ProductView> {
                       products[index].price,
                       products[index].title,
                     );
+                    Scaffold.of(context).removeCurrentSnackBar();
+                    Scaffold.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Added product !'),
+                        action: SnackBarAction(label: 'UNDO', onPressed: (){
+                          cart.undoAdding(products[index].id);
+                        }),
+                        duration: Duration(
+                          seconds: 2,
+                        ),
+                      ),
+                    );
                   },
                 ),
                 trailing: Consumer<Product>(

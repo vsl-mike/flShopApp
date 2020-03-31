@@ -60,6 +60,48 @@ class CartScreen extends StatelessWidget {
                 return Dismissible(
                   direction: DismissDirection.endToStart,
                   key: ValueKey(cart.items.values.toList()[index].id),
+                  confirmDismiss: (direction) {
+                    return showDialog(
+                        context: context,
+                        builder: (_) {
+                          return AlertDialog(
+                            titlePadding: EdgeInsets.all(0),
+                            title: Container(
+                              padding: EdgeInsets.all(15),
+                              color: Theme.of(context).primaryColor,
+                              //width: double.infinity,
+                              child: Text(
+                                'Are you sure ?',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onBackground,
+                                  fontSize: 20,
+                                ),
+                              ),
+                            ),
+                            content: Text(
+                              'Delete item ?',
+                              style: TextStyle(fontSize: 18),
+                            ),
+                            actions: <Widget>[
+                              FlatButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop(true);
+                                },
+                                child: Text('Yes'),
+                              ),
+                              FlatButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop(false);
+                                },
+                                child: Text('No'),
+                              ),
+                            ],
+                          );
+                        });
+                  },
                   background: Container(
                     child: Icon(
                       Icons.delete,
