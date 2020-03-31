@@ -1,5 +1,28 @@
 import 'package:flutter/material.dart';
-import './product.dart';
+
+class Product with ChangeNotifier {
+  final String id;
+  final String title;
+  final String description;
+  final double price;
+  final String imageUrl;
+  bool isFavorite;
+
+  void toggleFavorite() {
+    isFavorite = !isFavorite;
+    notifyListeners();
+  }
+
+  Product ({
+    @required this.id,
+    @required this.description,
+    @required this.imageUrl,
+    @required this.price,
+    @required this.title,
+    this.isFavorite = false,
+  });
+}
+
 
 class Products with ChangeNotifier {
   List<Product> _items = [
@@ -39,6 +62,14 @@ class Products with ChangeNotifier {
 
   List<Product> get items {
     return [..._items];
+  }
+
+  List<Product> get itemsFavorite {
+    return [
+      ..._items.where((elem) {
+        return elem.isFavorite == true;
+      }).toList()
+    ];
   }
 
   Product getByID(String id) {

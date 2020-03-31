@@ -2,10 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/products.dart';
 import '../providers/cart.dart';
-import '../providers/product.dart';
 import '../screens/product_detail.dart';
 
-class ProductView extends StatelessWidget {
+class ProductView extends StatefulWidget {
+  final bool isFavorite;
+  ProductView(this.isFavorite);
+  @override
+  _ProductViewState createState() => _ProductViewState();
+}
+
+class _ProductViewState extends State<ProductView> {
   void goToProductDetail(BuildContext context, Product product) {
     Navigator.of(context)
         .pushNamed(ProductDetailScreen.routeName, arguments: product);
@@ -14,7 +20,9 @@ class ProductView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Cart cart = Provider.of<Cart>(context, listen: false);
-    List<Product> products = Provider.of<Products>(context).items;
+    List<Product> products = widget.isFavorite
+        ? Provider.of<Products>(context).itemsFavorite
+        : Provider.of<Products>(context).items;
     return GridView.builder(
       padding: const EdgeInsets.all(10),
       itemCount: products.length,
@@ -53,12 +61,13 @@ class ProductView extends StatelessWidget {
                 ),
                 trailing: Consumer<Product>(
                   builder: (ctx, product, _) => IconButton(
-                    color: Theme.of(context).accentColor,
-                    icon: product.isFavorite
-                        ? Icon(Icons.favorite)
-                        : Icon(Icons.favorite_border),
-                    onPressed: () => product.toggleFavorite(),
-                  ),
+                      color: Theme.of(context).accentColor,
+                      icon: product.isFavorite
+                          ? Icon(Icons.favorite)
+                          : Icon(Icons.favorite_border),
+                      onPressed: () => setState(() {
+                            product.toggleFavorite();
+                          })),
                 ),
               ),
             ),
