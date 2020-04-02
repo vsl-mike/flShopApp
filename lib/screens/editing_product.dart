@@ -64,7 +64,7 @@ class _EditProductState extends State<EditProduct> {
     bool isValid = _form.currentState.validate();
     if (!isValid) return;
     newProduct = Product(
-        id: DateTime.now().toString(),
+        id: newProduct.id,
         description: newProduct.description,
         imageUrl: imageUrlController.text,
         price: newProduct.price,
@@ -77,8 +77,13 @@ class _EditProductState extends State<EditProduct> {
       isLoading = true;
     });
     if (isEditExistProduct) {
-      Provider.of<Products>(context, listen: false)
-          .updateItem(productID, newProduct);
+      await Provider.of<Products>(context, listen: false).updateItem(
+          productID,
+          newProduct.title,
+          newProduct.price.toString(),
+          newProduct.description,
+          newProduct.imageUrl,
+          newProduct.isFavorite);
       Navigator.of(context).pop();
     } else {
       try {
@@ -98,12 +103,14 @@ class _EditProductState extends State<EditProduct> {
             actions: <Widget>[
               FlatButton(
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    Navigator.of(ctx).pop();
                   },
                   child: Text('Okay'))
             ],
           ),
-        );
+        ).then((_) {
+          Navigator.of(context).pop();
+        });
       }
     }
   }
