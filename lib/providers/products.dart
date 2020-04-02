@@ -13,7 +13,7 @@ class Product with ChangeNotifier {
     notifyListeners();
   }
 
-  Product ({
+  Product({
     @required this.id,
     @required this.description,
     @required this.imageUrl,
@@ -22,7 +22,6 @@ class Product with ChangeNotifier {
     this.isFavorite = false,
   });
 }
-
 
 class Products with ChangeNotifier {
   List<Product> _items = [
@@ -74,6 +73,12 @@ class Products with ChangeNotifier {
 
   Product getByID(String id) {
     return _items.firstWhere((item) => item.id == id);
+  }
+
+  void updateItem(String productId,Product product) {
+    var elementIndex =
+        _items.indexOf(_items.firstWhere((prod) => prod.id == productId));
+    _items[elementIndex] = product;
   }
 
   void addProduct(Product item) {

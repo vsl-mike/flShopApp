@@ -27,7 +27,8 @@ class ManageView extends StatelessWidget {
                         color: Colors.blue,
                       ),
                       onPressed: () {
-                        Navigator.of(context).pushNamed(EditProduct.routeName);
+                        Navigator.of(context).pushNamed(EditProduct.routeName,
+                            arguments: products[index].id);
                       }),
                   IconButton(
                       icon: Icon(
