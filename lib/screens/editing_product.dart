@@ -13,6 +13,7 @@ class EditProduct extends StatefulWidget {
 }
 
 class _EditProductState extends State<EditProduct> {
+  bool isLoading = false;
   bool isLoad = false;
   bool isEditExistProduct = false;
   String productID;
@@ -59,7 +60,7 @@ class _EditProductState extends State<EditProduct> {
     super.dispose();
   }
 
-  void saveState() {
+  Future<void> saveState() async {
     bool isValid = _form.currentState.validate();
     if (!isValid) return;
     newProduct = Product(
@@ -67,13 +68,44 @@ class _EditProductState extends State<EditProduct> {
         description: newProduct.description,
         imageUrl: imageUrlController.text,
         price: newProduct.price,
-        title: newProduct.title);
+        title: newProduct.title,
+        isFavorite: newProduct.isFavorite);
+    bool isFavorite = newProduct.isFavorite;
     _form.currentState.save();
-    isEditExistProduct
-        ? Provider.of<Products>(context, listen: false)
-            .updateItem(productID, newProduct)
-        : Provider.of<Products>(context, listen: false).addProduct(newProduct);
-    Navigator.of(context).pop();
+    newProduct.isFavorite = isFavorite;
+    setState(() {
+      isLoading = true;
+    });
+    if (isEditExistProduct) {
+      Provider.of<Products>(context, listen: false)
+          .updateItem(productID, newProduct);
+      Navigator.of(context).pop();
+    } else {
+      try {
+        await Provider.of<Products>(context, listen: false).addProduct(
+            newProduct.title,
+            newProduct.price.toString(),
+            newProduct.description,
+            newProduct.imageUrl,
+            newProduct.isFavorite);
+        Navigator.of(context).pop();
+      } catch (error) {
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text('Get an error'),
+            content: Text('Something went wrong while adding new product'),
+            actions: <Widget>[
+              FlatButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Okay'))
+            ],
+          ),
+        );
+      }
+    }
   }
 
   void listnerImageUrl() {
@@ -93,138 +125,145 @@ class _EditProductState extends State<EditProduct> {
               })
         ],
       ),
-      body: Form(
-        key: _form,
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: SingleChildScrollView(
-            child: Column(
-              children: <Widget>[
-                TextFormField(
-                  initialValue: isEditExistProduct ? newProduct.title : '',
-                  textInputAction: TextInputAction.next,
-                  decoration: InputDecoration(labelText: 'Title'),
-                  onFieldSubmitted: (_) {
-                    FocusScope.of(context).requestFocus(widget._focusPrice);
-                  },
-                  validator: (value) {
-                    if (value.isEmpty) return 'No title !';
-                    return null;
-                  },
-                  onSaved: (value) {
-                    newProduct = Product(
-                        id: null,
-                        description: newProduct.description,
-                        imageUrl: newProduct.imageUrl,
-                        price: newProduct.price,
-                        title: value);
-                  },
-                ),
-                TextFormField(
-                  initialValue:
-                      isEditExistProduct ? newProduct.price.toString() : '',
-                  textInputAction: TextInputAction.next,
-                  decoration: InputDecoration(labelText: 'Price'),
-                  keyboardType: TextInputType.number,
-                  focusNode: widget._focusPrice,
-                  validator: (value) {
-                    if (value.isEmpty) return 'No price !';
-                    if (double.tryParse(value) == null)
-                      return 'Price must be a double';
-                    else {
-                      if (double.parse(value) <= 0)
-                        return 'Price must be greater than 0';
-                      else
-                        return null;
-                    }
-                  },
-                  onFieldSubmitted: (_) {
-                    FocusScope.of(context)
-                        .requestFocus(widget._focusDescription);
-                  },
-                  onSaved: (value) {
-                    newProduct = Product(
-                        id: null,
-                        description: newProduct.description,
-                        imageUrl: newProduct.imageUrl,
-                        price: double.parse(value),
-                        title: newProduct.title);
-                  },
-                ),
-                TextFormField(
-                  initialValue:
-                      isEditExistProduct ? newProduct.description : '',
-                  decoration: InputDecoration(labelText: 'Description'),
-                  keyboardType: TextInputType.multiline,
-                  maxLines: 3,
-                  focusNode: widget._focusDescription,
-                  validator: (value) {
-                    if (value.isEmpty) return 'No descriptions !';
-                    if (value.length < 10)
-                      return 'Must be at least 10 caracters';
-                    return null;
-                  },
-                  onSaved: (value) {
-                    newProduct = Product(
-                        id: null,
-                        description: value,
-                        imageUrl: newProduct.imageUrl,
-                        price: newProduct.price,
-                        title: newProduct.title);
-                  },
-                ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: <Widget>[
-                    Container(
-                      margin: EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          width: 1,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      height: 120,
-                      width: 120,
-                      child: imageUrlController.text.isEmpty
-                          ? Text('No image')
-                          : FittedBox(
-                              child: Image.network(imageUrlController.text),
-                              fit: BoxFit.cover,
-                            ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.all(8),
-                      width: 230,
-                      child: TextFormField(
-                        decoration: InputDecoration(labelText: 'ImageURL'),
-                        keyboardType: TextInputType.url,
-                        controller: imageUrlController,
-                        focusNode: widget._focusImageUrl,
-                        textInputAction: TextInputAction.done,
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Form(
+              key: _form,
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: <Widget>[
+                      TextFormField(
+                        initialValue:
+                            isEditExistProduct ? newProduct.title : '',
+                        textInputAction: TextInputAction.next,
+                        decoration: InputDecoration(labelText: 'Title'),
+                        onFieldSubmitted: (_) {
+                          FocusScope.of(context)
+                              .requestFocus(widget._focusPrice);
+                        },
                         validator: (value) {
-                          if (value.isEmpty) return 'No imageURL !';
-                          if (!value.startsWith('http://') &&
-                              !value.startsWith('https://'))
-                            return 'Url must starts with HTTP or HTTPS';
-                          if (!value.endsWith('.jpg') &&
-                              !value.endsWith('.png') &&
-                              !value.endsWith('.jpeg'))
-                            return 'Image can be png, jpeg or jpg';
+                          if (value.isEmpty) return 'No title !';
                           return null;
                         },
-                        onFieldSubmitted: (_) {
-                          saveState();
+                        onSaved: (value) {
+                          newProduct = Product(
+                              id: null,
+                              description: newProduct.description,
+                              imageUrl: newProduct.imageUrl,
+                              price: newProduct.price,
+                              title: value);
                         },
                       ),
-                    ),
-                  ],
+                      TextFormField(
+                        initialValue: isEditExistProduct
+                            ? newProduct.price.toString()
+                            : '',
+                        textInputAction: TextInputAction.next,
+                        decoration: InputDecoration(labelText: 'Price'),
+                        keyboardType: TextInputType.number,
+                        focusNode: widget._focusPrice,
+                        validator: (value) {
+                          if (value.isEmpty) return 'No price !';
+                          if (double.tryParse(value) == null)
+                            return 'Price must be a double';
+                          else {
+                            if (double.parse(value) <= 0)
+                              return 'Price must be greater than 0';
+                            else
+                              return null;
+                          }
+                        },
+                        onFieldSubmitted: (_) {
+                          FocusScope.of(context)
+                              .requestFocus(widget._focusDescription);
+                        },
+                        onSaved: (value) {
+                          newProduct = Product(
+                              id: null,
+                              description: newProduct.description,
+                              imageUrl: newProduct.imageUrl,
+                              price: double.parse(value),
+                              title: newProduct.title);
+                        },
+                      ),
+                      TextFormField(
+                        initialValue:
+                            isEditExistProduct ? newProduct.description : '',
+                        decoration: InputDecoration(labelText: 'Description'),
+                        keyboardType: TextInputType.multiline,
+                        maxLines: 3,
+                        focusNode: widget._focusDescription,
+                        validator: (value) {
+                          if (value.isEmpty) return 'No descriptions !';
+                          if (value.length < 10)
+                            return 'Must be at least 10 caracters';
+                          return null;
+                        },
+                        onSaved: (value) {
+                          newProduct = Product(
+                              id: null,
+                              description: value,
+                              imageUrl: newProduct.imageUrl,
+                              price: newProduct.price,
+                              title: newProduct.title);
+                        },
+                      ),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: <Widget>[
+                          Container(
+                            margin: EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                width: 1,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            height: 120,
+                            width: 120,
+                            child: imageUrlController.text.isEmpty
+                                ? Text('No image')
+                                : FittedBox(
+                                    child:
+                                        Image.network(imageUrlController.text),
+                                    fit: BoxFit.cover,
+                                  ),
+                          ),
+                          Container(
+                            margin: EdgeInsets.all(8),
+                            width: 230,
+                            child: TextFormField(
+                              decoration:
+                                  InputDecoration(labelText: 'ImageURL'),
+                              keyboardType: TextInputType.url,
+                              controller: imageUrlController,
+                              focusNode: widget._focusImageUrl,
+                              textInputAction: TextInputAction.done,
+                              validator: (value) {
+                                if (value.isEmpty) return 'No imageURL !';
+                                if (!value.startsWith('http://') &&
+                                    !value.startsWith('https://'))
+                                  return 'Url must starts with HTTP or HTTPS';
+                                if (!value.endsWith('.jpg') &&
+                                    !value.endsWith('.png') &&
+                                    !value.endsWith('.jpeg'))
+                                  return 'Image can be png, jpeg or jpg';
+                                return null;
+                              },
+                              onFieldSubmitted: (_) {
+                                saveState();
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
-      ),
     );
   }
 }
