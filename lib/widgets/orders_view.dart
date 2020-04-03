@@ -34,7 +34,7 @@ class _OrdersViewState extends State<OrdersView> {
                   child: Chip(
                     backgroundColor: Theme.of(context).primaryColor,
                     label: Text(
-                      '\$' + orders.items[widget.index].totalPrice.toString(),
+                      '\$' + orders.items[widget.index].totalPrice.toStringAsFixed(2),
                       style: TextStyle(
                           color: Theme.of(context).colorScheme.onBackground),
                     ),

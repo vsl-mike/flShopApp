@@ -4,50 +4,8 @@ import '../widgets/orders_view.dart';
 import 'package:provider/provider.dart';
 import '../providers/orders.dart';
 
-class OrdersScreen extends StatefulWidget {
+class OrdersScreen extends StatelessWidget {
   static const String routeName = '/orders';
-
-  @override
-  _OrdersScreenState createState() => _OrdersScreenState();
-}
-
-class _OrdersScreenState extends State<OrdersScreen> {
-  @override
-  void didChangeDependencies() {
-    if (!isLoading) {
-      setState(() {
-        isLoading = true;
-      });
-      Provider.of<Orders>(context, listen: false).getItems().then((listOrders) {
-        orders = listOrders;
-        setState(() {
-          isLoading = false;
-        });
-      }).catchError((_) {
-        showDialog(
-            context: context,
-            builder: (ctx) => AlertDialog(
-                  title: Text('Error'),
-                  content: Text('Something went wrong!'),
-                  actions: <Widget>[
-                    FlatButton(
-                      onPressed: () => Navigator.of(ctx).pop(),
-                      child: Text('Okay'),
-                    ),
-                  ],
-                )).then((_) {
-          setState(() {
-            isLoading = false;
-            orders=[];
-          });
-        });
-      });
-    }
-    super.didChangeDependencies();
-  }
-
-  List<Order> orders;
-  var isLoading = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,13 +13,32 @@ class _OrdersScreenState extends State<OrdersScreen> {
         title: Text('Orders'),
       ),
       drawer: AppDrawer(),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: orders.length,
-              itemBuilder: (ctx, index) {
-                return OrdersView(index);
-              }),
+      body: FutureBuilder(
+        future: Provider.of<Orders>(context, listen: false).getItems(),
+        builder: (ctx, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else {
+            if (snapshot.error == null) {
+              List<Order> orders = snapshot.data as List<Order>;
+              return orders.length == 0
+                  ? Center(
+                      child: Text('No orders'),
+                    )
+                  : ListView.builder(
+                      itemCount: orders.length,
+                      itemBuilder: (ctx, index) {
+                        return OrdersView(index);
+                      },
+                    );
+            } else {
+              return Center(
+                child: Text('Something went wrong'),
+              );
+            }
+          }
+        },
+      ),
     );
   }
 }

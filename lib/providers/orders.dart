@@ -20,13 +20,14 @@ class Order {
 class Orders with ChangeNotifier {
   List<Order> _items = [];
 
-  List<Order> get items => [..._items];
+  List<Order> get items => [..._items].reversed.toList();
 
   Future<List<Order>> getItems() async {
     String url = 'https://flutter-demob.firebaseio.com/orders.json';
     try {
       _items=[];
       var response = await http.get(url);
+      if(json.decode(response.body)==null) return [];
       if(response.statusCode>=400) throw Exception;
       Map<String, dynamic> mapItems = json.decode(response.body);
       mapItems.forEach((k, v) {

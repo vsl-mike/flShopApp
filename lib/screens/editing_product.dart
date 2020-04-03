@@ -30,7 +30,6 @@ class _EditProductState extends State<EditProduct> {
   @override
   void initState() {
     widget._focusImageUrl.addListener(listnerImageUrl);
-
     super.initState();
   }
 

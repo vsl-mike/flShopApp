@@ -14,15 +14,10 @@ class Product with ChangeNotifier {
   Future<void> toggleFavorite() async {
     bool changeFavorite = !isFavorite;
     isFavorite = changeFavorite;
-    String url = 'https://flutter-demob.firebaseio.com/products.json';
+    String url =
+        'https://flutter-demob.firebaseio.com/products/' + id + '.json';
     var bodyJson = json.encode({
-      id: {
-        'title': title,
-        'description': description,
-        'price': price.toString(),
-        'imageURL': imageUrl,
-        'isFavorite': changeFavorite,
-      }
+      'isFavorite': changeFavorite,
     });
     try {
       var response = await http.patch(url, body: bodyJson);
@@ -98,6 +93,10 @@ class Products with ChangeNotifier {
     String url = 'https://flutter-demob.firebaseio.com/products.json';
     try {
       var response = await http.get(url);
+      if (json.decode(response.body) == null) {
+        notifyListeners();
+        return;
+      }
       var itemsMap = json.decode(response.body) as Map<String, dynamic>;
       List<Product> itemList = [];
       if (response.statusCode >= 400) throw Exception;
