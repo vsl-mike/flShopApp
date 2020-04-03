@@ -11,9 +11,28 @@ class Product with ChangeNotifier {
   final String imageUrl;
   bool isFavorite;
 
-  void toggleFavorite() {
-    isFavorite = !isFavorite;
-    notifyListeners();
+  Future<void> toggleFavorite() async {
+    bool changeFavorite = !isFavorite;
+    isFavorite = changeFavorite;
+    String url = 'https://flutter-demob.firebaseio.com/products.json';
+    var bodyJson = json.encode({
+      id: {
+        'title': title,
+        'description': description,
+        'price': price.toString(),
+        'imageURL': imageUrl,
+        'isFavorite': changeFavorite,
+      }
+    });
+    try {
+      var response = await http.patch(url, body: bodyJson);
+      if (response.statusCode >= 400) throw Exception;
+      notifyListeners();
+    } catch (error) {
+      isFavorite = !changeFavorite;
+      notifyListeners();
+      throw error;
+    }
   }
 
   Product({
@@ -127,13 +146,14 @@ class Products with ChangeNotifier {
       }
     });
     try {
-      await http.patch(url, body: bodyJson);
+      var response = await http.patch(url, body: bodyJson);
+      if (response.statusCode >= 400) throw Exception;
       var elementIndex =
           _items.indexOf(_items.firstWhere((prod) => prod.id == productId));
       _items[elementIndex] = product;
       notifyListeners();
     } catch (error) {
-      print(error);
+      throw error;
     }
   }
 
@@ -147,16 +167,33 @@ class Products with ChangeNotifier {
       'imageURL': imageUrl,
       'isFavorite': isFavorite,
     });
-    var response = await http.post(url, body: bodyJson);
-    Product item = Product(
-      id: json.decode(response.body)['name'],
-      description: description,
-      title: title,
-      price: double.parse(price),
-      imageUrl: imageUrl,
-      isFavorite: isFavorite,
-    );
-    _items.add(item);
-    notifyListeners();
+    try {
+      var response = await http.post(url, body: bodyJson);
+      Product item = Product(
+        id: json.decode(response.body)['name'],
+        description: description,
+        title: title,
+        price: double.parse(price),
+        imageUrl: imageUrl,
+        isFavorite: isFavorite,
+      );
+      _items.add(item);
+      notifyListeners();
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  Future<void> deleteProduct(String productId) async {
+    String url =
+        'https://flutter-demob.firebaseio.com/products/' + productId + '.json';
+    try {
+      var response = await http.delete(url);
+      if (response.statusCode >= 400) throw Exception;
+      _items.removeWhere((product) => productId == product.id);
+      notifyListeners();
+    } catch (error) {
+      throw error;
+    }
   }
 }

@@ -4,6 +4,31 @@ import '../providers/products.dart';
 import '../screens/editing_product.dart';
 
 class ManageView extends StatelessWidget {
+  Future<void> tryToDelete(BuildContext context, String productId) async {
+    Provider.of<Products>(context, listen: false)
+        .deleteProduct(productId)
+        .then((_) {
+      Scaffold.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Item delete!',textAlign: TextAlign.center,),
+          duration: Duration(seconds:2),
+        ),
+      );
+    }).catchError((error) {
+      Scaffold.of(context).removeCurrentSnackBar();
+      Scaffold.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Can\'t delete, something went wrong'),
+          duration: Duration(seconds:2),
+          action: SnackBarAction(
+            label: 'Try again',
+            onPressed: () => tryToDelete(context, productId),
+          ),
+        ),
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     List<Product> products = Provider.of<Products>(context).items;
@@ -35,7 +60,9 @@ class ManageView extends StatelessWidget {
                         Icons.delete,
                         color: Colors.red,
                       ),
-                      onPressed: () {})
+                      onPressed: () {
+                        tryToDelete(context, products[index].id);
+                      })
                 ],
               ),
             ),

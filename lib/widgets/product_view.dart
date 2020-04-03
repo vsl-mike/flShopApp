@@ -61,9 +61,11 @@ class _ProductViewState extends State<ProductView> {
                     Scaffold.of(context).showSnackBar(
                       SnackBar(
                         content: Text('Added product !'),
-                        action: SnackBarAction(label: 'UNDO', onPressed: (){
-                          cart.undoAdding(products[index].id);
-                        }),
+                        action: SnackBarAction(
+                            label: 'UNDO',
+                            onPressed: () {
+                              cart.undoAdding(products[index].id);
+                            }),
                         duration: Duration(
                           seconds: 2,
                         ),
@@ -73,13 +75,24 @@ class _ProductViewState extends State<ProductView> {
                 ),
                 trailing: Consumer<Product>(
                   builder: (ctx, product, _) => IconButton(
-                      color: Theme.of(context).accentColor,
-                      icon: product.isFavorite
-                          ? Icon(Icons.favorite)
-                          : Icon(Icons.favorite_border),
-                      onPressed: () => setState(() {
-                            product.toggleFavorite();
-                          })),
+                    color: Theme.of(context).accentColor,
+                    icon: product.isFavorite
+                        ? Icon(Icons.favorite)
+                        : Icon(Icons.favorite_border),
+                    onPressed: () => setState(
+                      () {
+                        product.toggleFavorite().catchError(
+                          (_) {
+                            Scaffold.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Something went wrong!'),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
                 ),
               ),
             ),

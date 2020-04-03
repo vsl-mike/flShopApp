@@ -76,17 +76,17 @@ class _EditProductState extends State<EditProduct> {
     setState(() {
       isLoading = true;
     });
-    if (isEditExistProduct) {
-      await Provider.of<Products>(context, listen: false).updateItem(
-          productID,
-          newProduct.title,
-          newProduct.price.toString(),
-          newProduct.description,
-          newProduct.imageUrl,
-          newProduct.isFavorite);
-      Navigator.of(context).pop();
-    } else {
-      try {
+    try {
+      if (isEditExistProduct) {
+        await Provider.of<Products>(context, listen: false).updateItem(
+            productID,
+            newProduct.title,
+            newProduct.price.toString(),
+            newProduct.description,
+            newProduct.imageUrl,
+            newProduct.isFavorite);
+        Navigator.of(context).pop();
+      } else {
         await Provider.of<Products>(context, listen: false).addProduct(
             newProduct.title,
             newProduct.price.toString(),
@@ -94,24 +94,24 @@ class _EditProductState extends State<EditProduct> {
             newProduct.imageUrl,
             newProduct.isFavorite);
         Navigator.of(context).pop();
-      } catch (error) {
-        showDialog(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text('Get an error'),
-            content: Text('Something went wrong while adding new product'),
-            actions: <Widget>[
-              FlatButton(
-                  onPressed: () {
-                    Navigator.of(ctx).pop();
-                  },
-                  child: Text('Okay'))
-            ],
-          ),
-        ).then((_) {
-          Navigator.of(context).pop();
-        });
       }
+    } catch (error) {
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text('Get an error'),
+          content: Text('Something went wrong while adding new product'),
+          actions: <Widget>[
+            FlatButton(
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                },
+                child: Text('Okay'))
+          ],
+        ),
+      ).then((_) {
+        Navigator.of(context).pop();
+      });
     }
   }
 

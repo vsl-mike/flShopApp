@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/orders.dart';
+import 'package:intl/intl.dart';
 
 class OrdersView extends StatefulWidget {
   final int index;
@@ -21,7 +22,12 @@ class _OrdersViewState extends State<OrdersView> {
           child: ListTile(
             title: Row(
               children: <Widget>[
-                Text(orders.items[widget.index].dateTime.toString()),
+                Row(
+                  children: <Widget>[
+                    SizedBox(width: 25,),
+                    Text(DateFormat.Hm().add_yMMMMd().format(orders.items[widget.index].dateTime),),
+                  ],
+                ),
                 Spacer(),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
