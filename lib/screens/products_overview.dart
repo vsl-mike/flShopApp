@@ -6,6 +6,7 @@ import '../widgets/product_view.dart';
 import '../widgets/drawer.dart';
 
 class ProductsOverviewScreen extends StatefulWidget {
+  static const String routeName = '/products-overview';
   @override
   _ProductsOverviewScreenState createState() => _ProductsOverviewScreenState();
 }
