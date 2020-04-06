@@ -1,4 +1,4 @@
-#Sat Apr 04 10:47:12 MSK 2020
+#Mon Apr 06 14:51:56 MSK 2020
 base.0=D\:\\Install\\new\\flShopApp\\build\\app\\intermediates\\dex\\debug\\mergeDexDebug\\out\\classes.dex
 path.0=classes.dex
 renamed.0=classes.dex

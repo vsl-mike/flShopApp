@@ -1,13 +1,14 @@
 import 'dart:ui';
-
+import '../providers/auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'dart:math';
 
 class AuthScreen extends StatefulWidget {
   final _focusPassword = FocusNode();
   final _focusConfirmPassword = FocusNode();
   final globkey = GlobalKey<FormState>();
-  TextEditingController password = TextEditingController();
+  final TextEditingController password = TextEditingController();
   @override
   _AuthScreenState createState() => _AuthScreenState();
 }
@@ -32,13 +33,18 @@ class _AuthScreenState extends State<AuthScreen> {
 
   void saveState() {
     if (widget.globkey.currentState.validate()) {
-      print(isSignUp.toString() + ' valid true');
       widget.globkey.currentState.save();
       authData = AuthData(authData.email, widget.password.text);
-      print(authData.email);
-      print(authData.password);
+      if (isSignUp) {
+        //sign up
+        Provider.of<Auth>(context, listen: false)
+            .authorization(authData.email, authData.password, 'signUp');
+      } else {
+        Provider.of<Auth>(context, listen: false).authorization(
+            authData.email, authData.password, 'signInWithPassword');
+        //log in
+      }
     } else {
-      print(isSignUp.toString() + ' valid false');
       return;
     }
   }

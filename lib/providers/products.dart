@@ -41,6 +41,10 @@ class Product with ChangeNotifier {
 }
 
 class Products with ChangeNotifier {
+
+  final String token;
+  Products(this.token);
+
   List<Product> _items = [
     // Product(
     //   id: 'p1',
@@ -90,7 +94,7 @@ class Products with ChangeNotifier {
 
   Future<void> getItems() async {
     _items = [];
-    String url = 'https://flutter-demob.firebaseio.com/products.json';
+    String url = 'https://flutter-demob.firebaseio.com/products.json?access_token=<ACCESS_TOKEN>"';
     try {
       var response = await http.get(url);
       if (json.decode(response.body) == null) {
