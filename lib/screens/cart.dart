@@ -3,6 +3,7 @@ import '../providers/orders.dart';
 import 'package:provider/provider.dart';
 import '../providers/cart.dart';
 import '../widgets/cart_item.dart';
+import '../providers/auth.dart';
 
 class CartScreen extends StatefulWidget {
   static const String routeName = '/cart';
@@ -19,7 +20,7 @@ class _CartScreenState extends State<CartScreen> {
         isLoading = true;
       });
       try {
-        await orders.addOrder(cartItems, totalPrice);
+        await orders.addOrder(cartItems, totalPrice,Provider.of<Auth>(context,listen: false).token);
       } catch (error) {
         setState(() {
           isLoading = false;

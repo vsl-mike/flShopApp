@@ -15,6 +15,7 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
   bool isFavorite = false;
   @override
   Widget build(BuildContext context) {
+    print('build Overview');
     return Scaffold(
       appBar: AppBar(
         title: Text('Shop'),
@@ -44,7 +45,7 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
       ),
       drawer: AppDrawer(),
       body: FutureBuilder(
-        future: Provider.of<Products>(context,listen: false).getItems(),
+        future: Provider.of<Products>(context, listen: false).getItems(),
         builder: (ctx, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(

@@ -11,11 +11,11 @@ class Product with ChangeNotifier {
   final String imageUrl;
   bool isFavorite;
 
-  Future<void> toggleFavorite() async {
+  Future<void> toggleFavorite(String token) async {
     bool changeFavorite = !isFavorite;
     isFavorite = changeFavorite;
     String url =
-        'https://flutter-demob.firebaseio.com/products/' + id + '.json';
+        'https://flutter-demob.firebaseio.com/products/' + id + '.json?auth='+token;
     var bodyJson = json.encode({
       'isFavorite': changeFavorite,
     });
@@ -94,7 +94,7 @@ class Products with ChangeNotifier {
 
   Future<void> getItems() async {
     _items = [];
-    String url = 'https://flutter-demob.firebaseio.com/products.json?access_token=<ACCESS_TOKEN>"';
+    String url = 'https://flutter-demob.firebaseio.com/products.json?auth='+token;
     try {
       var response = await http.get(url);
       if (json.decode(response.body) == null) {
@@ -130,7 +130,7 @@ class Products with ChangeNotifier {
 
   Future<void> updateItem(String productId, String title, String price,
       String description, String imageUrl, bool isFavorite) async {
-    String url = 'https://flutter-demob.firebaseio.com/products.json';
+    String url = 'https://flutter-demob.firebaseio.com/products.json?auth='+token;
     Product product = Product(
       id: productId,
       description: description,
@@ -162,7 +162,7 @@ class Products with ChangeNotifier {
 
   Future<void> addProduct(String title, String price, String description,
       String imageUrl, bool isFavorite) async {
-    String url = 'https://flutter-demob.firebaseio.com/products.json';
+    String url = 'https://flutter-demob.firebaseio.com/products.json?auth='+token;
     var bodyJson = json.encode({
       'title': title,
       'price': price,
@@ -189,7 +189,7 @@ class Products with ChangeNotifier {
 
   Future<void> deleteProduct(String productId) async {
     String url =
-        'https://flutter-demob.firebaseio.com/products/' + productId + '.json';
+        'https://flutter-demob.firebaseio.com/products/' + productId + '.json?auth='+token;
     try {
       var response = await http.delete(url);
       if (response.statusCode >= 400) throw Exception;

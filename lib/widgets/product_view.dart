@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/products.dart';
 import '../providers/cart.dart';
+import '../providers/auth.dart';
 import '../screens/product_detail.dart';
+
 
 class ProductView extends StatefulWidget {
   final bool isFavorite;
@@ -85,7 +87,7 @@ class _ProductViewState extends State<ProductView> {
                               : Icon(Icons.favorite_border),
                           onPressed: () => setState(
                             () {
-                              product.toggleFavorite().catchError(
+                              product.toggleFavorite(Provider.of<Auth>(context,listen: false).token).catchError(
                                 (_) {
                                   Scaffold.of(context).showSnackBar(
                                     SnackBar(

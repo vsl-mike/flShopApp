@@ -31,18 +31,55 @@ class _AuthScreenState extends State<AuthScreen> {
   AuthData authData = AuthData('', '');
   var isSignUp = false;
 
-  void saveState() {
+  Future<void> saveState() async {
     if (widget.globkey.currentState.validate()) {
       widget.globkey.currentState.save();
       authData = AuthData(authData.email, widget.password.text);
-      if (isSignUp) {
-        //sign up
-        Provider.of<Auth>(context, listen: false)
-            .authorization(authData.email, authData.password, 'signUp');
-      } else {
-        Provider.of<Auth>(context, listen: false).authorization(
-            authData.email, authData.password, 'signInWithPassword');
-        //log in
+      try {
+        if (isSignUp) {
+          //sign up
+          await Provider.of<Auth>(context, listen: false)
+              .authorization(authData.email, authData.password, 'signUp');
+        } else {
+          await Provider.of<Auth>(context, listen: false).authorization(
+              authData.email, authData.password, 'signInWithPassword');
+          //log in
+        }
+      } catch (error) {
+        String errorMessage = '';
+        switch (error.toString()) {
+          case 'EMAIL_EXISTS':
+            errorMessage =
+                'The email address is already in use by another account!';
+            break;
+          case 'TOO_MANY_ATTEMPTS_TRY_LATER':
+            errorMessage = 'Too many attempts, try later!';
+            break;
+          case 'EMAIL_NOT_FOUND':
+            errorMessage =
+                'There is no user with this email!';
+            break;
+          case 'INVALID_PASSWORD':
+            errorMessage = 'The password is invalid!';
+            break;
+          default:
+            errorMessage = 'Something went wrong';
+        }
+        showDialog(
+          context: context,
+          builder: (ctx) {
+            return AlertDialog(
+              title: Text('Error'),
+              content: Text(errorMessage),
+              actions: <Widget>[
+                FlatButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: Text('Try again!'),
+                ),
+              ],
+            );
+          },
+        );
       }
     } else {
       return;

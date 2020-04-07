@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
+import '../models/http_exception.dart';
 
 class Auth with ChangeNotifier {
   String _token;
@@ -18,7 +19,6 @@ class Auth with ChangeNotifier {
 
   bool isAuth() {
     if (_token == null) {
-
       return false;
     }
     if (_expireDate.isBefore(DateTime.now())) {
@@ -37,12 +37,19 @@ class Auth with ChangeNotifier {
       'password': password,
       'returnSecureToken': true,
     });
-    var response = await http.post(url, body: bodyJson);
-    var responseData = json.decode(response.body);
-    _token = responseData['idToken'];
-    _expireDate = DateTime.now()
-        .add(Duration(seconds: int.parse(responseData['expiresIn'])));
-    _userID = responseData['localId'];
-    notifyListeners();
+    try {
+      var response = await http.post(url, body: bodyJson);
+      var responseData = json.decode(response.body);
+      print(responseData);
+      if (responseData['error'] != null)
+        throw HttpException(responseData['error']['message']);
+      _token = responseData['idToken'];
+      _expireDate = DateTime.now()
+          .add(Duration(seconds: int.parse(responseData['expiresIn'])));
+      _userID = responseData['localId'];
+      notifyListeners();
+    } catch (error) {
+      throw error;
+    }
   }
 }
