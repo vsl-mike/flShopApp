@@ -20,7 +20,11 @@ class _CartScreenState extends State<CartScreen> {
         isLoading = true;
       });
       try {
-        await orders.addOrder(cartItems, totalPrice,Provider.of<Auth>(context,listen: false).token);
+        await orders.addOrder(
+            cartItems,
+            totalPrice,
+            Provider.of<Auth>(context, listen: false).token,
+            Provider.of<Auth>(context, listen: false).userID);
       } catch (error) {
         setState(() {
           isLoading = false;

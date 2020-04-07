@@ -22,6 +22,14 @@ class AuthData {
 
 class _AuthScreenState extends State<AuthScreen> {
   @override
+  void initState() {
+    Future.delayed(Duration(seconds: 0)).then((_){
+      Provider.of<Auth>(context,listen: false).workWithMemory('Get');
+    });
+    super.initState();
+  }
+
+  @override
   void dispose() {
     widget._focusPassword.dispose();
     widget._focusConfirmPassword.dispose();
@@ -56,8 +64,7 @@ class _AuthScreenState extends State<AuthScreen> {
             errorMessage = 'Too many attempts, try later!';
             break;
           case 'EMAIL_NOT_FOUND':
-            errorMessage =
-                'There is no user with this email!';
+            errorMessage = 'There is no user with this email!';
             break;
           case 'INVALID_PASSWORD':
             errorMessage = 'The password is invalid!';

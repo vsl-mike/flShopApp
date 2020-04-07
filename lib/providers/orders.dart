@@ -23,8 +23,8 @@ class Orders with ChangeNotifier {
 
   List<Order> get items => [..._items].reversed.toList();
 
-  Future<List<Order>> getItems(String token) async {
-    String url = 'https://flutter-demob.firebaseio.com/orders.json?auth='+token;
+  Future<List<Order>> getItems(String token,String userId) async {
+    String url = 'https://flutter-demob.firebaseio.com/orders/'+userId+'.json?auth='+token;
     try {
       _items=[];
       var response = await http.get(url);
@@ -52,8 +52,8 @@ class Orders with ChangeNotifier {
     }
   }
 
-  Future<void> addOrder(List<CartItem> cartItems, double totalPrice,String token) async {
-    String url = 'https://flutter-demob.firebaseio.com/orders.json?auth='+token;
+  Future<void> addOrder(List<CartItem> cartItems, double totalPrice,String token,String userId) async {
+    String url = 'https://flutter-demob.firebaseio.com/orders/'+userId+'.json?auth='+token;
     var mapCartItems = Map.fromIterable(cartItems,
         key: (item) => item.id,
         value: (item) => {

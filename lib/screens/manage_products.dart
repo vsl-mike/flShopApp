@@ -22,25 +22,19 @@ class ManageProductsScreen extends StatelessWidget {
         ],
       ),
       drawer: AppDrawer(),
-      body: RefreshIndicator(
-        onRefresh: () => Provider.of<Products>(context, listen: false)
-            .getItems()
-            .catchError((error) {
-          showDialog(
-              context: context,
-              builder: (ctx) => AlertDialog(
-                    title: Text('Something went wrong'),
-                    content: Text('Can\'t upload products'),
-                    actions: <Widget>[
-                      FlatButton(
-                          onPressed: () {
-                            Navigator.of(context).popAndPushNamed('/');
-                          },
-                          child: Text('Try again!'))
-                    ],
-                  ));
-        }),
-        child: ManageView(),
+      body: FutureBuilder(
+        future: Provider.of<Products>(context, listen: false).getItems(true),
+        builder: (ctx, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting)
+            return Center(child: CircularProgressIndicator());
+          else {
+            if (snapshot.error == null)
+              return ManageView();
+            else {
+              return Center(child: Text('Something wen\'t wrong!'));
+            }
+          }
+        },
       ),
     );
   }

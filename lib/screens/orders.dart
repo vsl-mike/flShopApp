@@ -15,8 +15,9 @@ class OrdersScreen extends StatelessWidget {
       ),
       drawer: AppDrawer(),
       body: FutureBuilder(
-        future: Provider.of<Orders>(context, listen: false)
-            .getItems(Provider.of<Auth>(context, listen: false).token),
+        future: Provider.of<Orders>(context, listen: false).getItems(
+            Provider.of<Auth>(context, listen: false).token,
+            Provider.of<Auth>(context, listen: false).userID),
         builder: (ctx, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());

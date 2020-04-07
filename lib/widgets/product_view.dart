@@ -87,7 +87,7 @@ class _ProductViewState extends State<ProductView> {
                               : Icon(Icons.favorite_border),
                           onPressed: () => setState(
                             () {
-                              product.toggleFavorite(Provider.of<Auth>(context,listen: false).token).catchError(
+                              product.toggleFavorite(Provider.of<Auth>(context,listen: false).token,Provider.of<Auth>(context,listen: false).userID).catchError(
                                 (_) {
                                   Scaffold.of(context).showSnackBar(
                                     SnackBar(

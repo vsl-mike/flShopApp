@@ -11,16 +11,20 @@ class Product with ChangeNotifier {
   final String imageUrl;
   bool isFavorite;
 
-  Future<void> toggleFavorite(String token) async {
+  Future<void> toggleFavorite(String token, String userID) async {
     bool changeFavorite = !isFavorite;
     isFavorite = changeFavorite;
-    String url =
-        'https://flutter-demob.firebaseio.com/products/' + id + '.json?auth='+token;
+    String url = 'https://flutter-demob.firebaseio.com/favorites/' +
+        userID +
+        '/' +
+        id +
+        '.json?auth=' +
+        token;
     var bodyJson = json.encode({
       'isFavorite': changeFavorite,
     });
     try {
-      var response = await http.patch(url, body: bodyJson);
+      var response = await http.put(url, body: bodyJson);
       if (response.statusCode >= 400) throw Exception;
       notifyListeners();
     } catch (error) {
@@ -41,9 +45,9 @@ class Product with ChangeNotifier {
 }
 
 class Products with ChangeNotifier {
-
   final String token;
-  Products(this.token);
+  final String userId;
+  Products(this.token, this.userId);
 
   List<Product> _items = [
     // Product(
@@ -92,11 +96,22 @@ class Products with ChangeNotifier {
     ];
   }
 
-  Future<void> getItems() async {
+  Future<void> getItems(bool withOwner) async {
     _items = [];
-    String url = 'https://flutter-demob.firebaseio.com/products.json?auth='+token;
+    String favUrl = 'https://flutter-demob.firebaseio.com/favorites/' +
+        userId +
+        '.json?auth=' +
+        token;
+    String url = withOwner
+        ? 'https://flutter-demob.firebaseio.com/products.json?auth=' +
+            token +
+            '&orderBy="owner"&equalTo="' +
+            userId +
+            '"'
+        : 'https://flutter-demob.firebaseio.com/products.json?auth=' + token;
     try {
       var response = await http.get(url);
+      var responseFav = await http.get(favUrl);
       if (json.decode(response.body) == null) {
         notifyListeners();
         return;
@@ -112,7 +127,12 @@ class Products with ChangeNotifier {
             imageUrl: productInfo['imageURL'],
             price: double.parse(productInfo['price']),
             title: productInfo['title'],
-            isFavorite: productInfo['isFavorite'],
+            isFavorite: json.decode(responseFav.body) == null ||
+                    json.decode(responseFav.body)[productId] == null
+                ? false
+                : json.decode(responseFav.body)[productId]['isFavorite'] == null
+                    ? false
+                    : json.decode(responseFav.body)[productId]['isFavorite'],
           ),
         );
       });
@@ -130,7 +150,8 @@ class Products with ChangeNotifier {
 
   Future<void> updateItem(String productId, String title, String price,
       String description, String imageUrl, bool isFavorite) async {
-    String url = 'https://flutter-demob.firebaseio.com/products.json?auth='+token;
+    String url =
+        'https://flutter-demob.firebaseio.com/products.json?auth=' + token;
     Product product = Product(
       id: productId,
       description: description,
@@ -141,11 +162,11 @@ class Products with ChangeNotifier {
     );
     var bodyJson = json.encode({
       productId: {
+        'owner': userId,
         'title': product.title,
         'description': product.description,
         'price': product.price.toString(),
         'imageURL': product.imageUrl,
-        'isFavorite': product.isFavorite,
       }
     });
     try {
@@ -162,13 +183,14 @@ class Products with ChangeNotifier {
 
   Future<void> addProduct(String title, String price, String description,
       String imageUrl, bool isFavorite) async {
-    String url = 'https://flutter-demob.firebaseio.com/products.json?auth='+token;
+    String url =
+        'https://flutter-demob.firebaseio.com/products.json?auth=' + token;
     var bodyJson = json.encode({
+      'owner': userId,
       'title': title,
       'price': price,
       'description': description,
       'imageURL': imageUrl,
-      'isFavorite': isFavorite,
     });
     try {
       var response = await http.post(url, body: bodyJson);
@@ -188,8 +210,10 @@ class Products with ChangeNotifier {
   }
 
   Future<void> deleteProduct(String productId) async {
-    String url =
-        'https://flutter-demob.firebaseio.com/products/' + productId + '.json?auth='+token;
+    String url = 'https://flutter-demob.firebaseio.com/products/' +
+        productId +
+        '.json?auth=' +
+        token;
     try {
       var response = await http.delete(url);
       if (response.statusCode >= 400) throw Exception;
