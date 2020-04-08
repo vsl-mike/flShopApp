@@ -5,7 +5,6 @@ import '../providers/cart.dart';
 import '../providers/auth.dart';
 import '../screens/product_detail.dart';
 
-
 class ProductView extends StatefulWidget {
   final bool isFavorite;
   ProductView(this.isFavorite);
@@ -38,12 +37,17 @@ class _ProductViewState extends State<ProductView> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(15),
                   child: GridTile(
-                    child: GestureDetector(
-                      child: Image.network(
-                        products[index].imageUrl,
-                        fit: BoxFit.cover,
+                    child: Hero(
+                      tag: products[index].id,
+                      child: GestureDetector(
+                        child: FadeInImage(
+                          placeholder: AssetImage('assets/images/original.png'),
+                          image: NetworkImage(products[index].imageUrl),
+                          fit: BoxFit.cover,
+                        ),
+                        onTap: () =>
+                            goToProductDetail(context, products[index]),
                       ),
-                      onTap: () => goToProductDetail(context, products[index]),
                     ),
                     footer: GridTileBar(
                       backgroundColor: Colors.black87,
@@ -87,7 +91,13 @@ class _ProductViewState extends State<ProductView> {
                               : Icon(Icons.favorite_border),
                           onPressed: () => setState(
                             () {
-                              product.toggleFavorite(Provider.of<Auth>(context,listen: false).token,Provider.of<Auth>(context,listen: false).userID).catchError(
+                              product
+                                  .toggleFavorite(
+                                      Provider.of<Auth>(context, listen: false)
+                                          .token,
+                                      Provider.of<Auth>(context, listen: false)
+                                          .userID)
+                                  .catchError(
                                 (_) {
                                   Scaffold.of(context).showSnackBar(
                                     SnackBar(

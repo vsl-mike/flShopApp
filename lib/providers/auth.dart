@@ -46,7 +46,6 @@ class Auth with ChangeNotifier {
       _autoLogoutTimer.cancel();
     }
     var timerSec = _expireDate.difference(DateTime.now()).inSeconds;
-    print(timerSec);
     _autoLogoutTimer = Timer(
       Duration(seconds: timerSec),
       logout,
@@ -60,7 +59,6 @@ class Auth with ChangeNotifier {
     });
     final SharedPreferences prefs = await _prefs;
     if (whatToDo == 'Save') {
-      print('Save');
       prefs.setString('userData', null);
       prefs.setString(
         'userData',
@@ -74,11 +72,9 @@ class Auth with ChangeNotifier {
       );
     }
     if (whatToDo == 'Delete') {
-      print('Delete');
       prefs.setString('userData', null);
     }
     if (whatToDo == 'Get') {
-      print('Get');
       if (prefs.getString('userData') == null) return;
       var userData = json.decode(prefs.getString('userData'));
       _token = userData['token'];

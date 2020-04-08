@@ -20,11 +20,22 @@ class AuthData {
   AuthData(this.email, this.password);
 }
 
-class _AuthScreenState extends State<AuthScreen> {
+bool _isSavingState = false;
+double _heightSignIn = 300;
+double _heightLogIn = 237;
+Animation<double> _opacityAnimation;
+AnimationController _controller;
+
+class _AuthScreenState extends State<AuthScreen>
+    with SingleTickerProviderStateMixin {
   @override
   void initState() {
-    Future.delayed(Duration(seconds: 0)).then((_){
-      Provider.of<Auth>(context,listen: false).workWithMemory('Get');
+    _isSavingState = false;
+    _controller =
+        AnimationController(duration: Duration(milliseconds: 300), vsync: this);
+    _opacityAnimation = Tween(begin: 0.0, end: 1.0).animate(_controller);
+    Future.delayed(Duration(seconds: 0)).then((_) {
+      Provider.of<Auth>(context, listen: false).workWithMemory('Get');
     });
     super.initState();
   }
@@ -40,6 +51,9 @@ class _AuthScreenState extends State<AuthScreen> {
   var isSignUp = false;
 
   Future<void> saveState() async {
+    setState(() {
+      _isSavingState = true;
+    });
     if (widget.globkey.currentState.validate()) {
       widget.globkey.currentState.save();
       authData = AuthData(authData.email, widget.password.text);
@@ -54,6 +68,9 @@ class _AuthScreenState extends State<AuthScreen> {
           //log in
         }
       } catch (error) {
+        setState(() {
+          _isSavingState = false;
+        });
         String errorMessage = '';
         switch (error.toString()) {
           case 'EMAIL_EXISTS':
@@ -89,6 +106,12 @@ class _AuthScreenState extends State<AuthScreen> {
         );
       }
     } else {
+      setState(() {
+        _heightLogIn = 280;
+        _heightSignIn = 340;
+        _isSavingState = false;
+      });
+
       return;
     }
   }
@@ -132,161 +155,186 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
 
               // Container with TextInputForms
-              Container(
+              AnimatedContainer(
+                curve: Curves.easeIn,
+                duration: Duration(milliseconds: 300),
+                height: isSignUp ? _heightSignIn : _heightLogIn,
                 width: MediaQuery.of(context).size.width * 0.8,
                 decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(15)),
-                child: Column(
-                  children: <Widget>[
-                    Form(
-                      key: widget.globkey,
-                      child: Column(
-                        children: <Widget>[
-                          Padding(
-                            padding: EdgeInsets.only(left: 20, right: 20),
-                            child: TextFormField(
-                              textInputAction: TextInputAction.next,
-                              keyboardType: TextInputType.emailAddress,
-                              decoration: InputDecoration(
-                                labelText: 'E-mail',
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: <Widget>[
+                      Form(
+                        key: widget.globkey,
+                        child: Column(
+                          children: <Widget>[
+                            Padding(
+                              padding: EdgeInsets.only(left: 20, right: 20),
+                              child: TextFormField(
+                                textInputAction: TextInputAction.next,
+                                keyboardType: TextInputType.emailAddress,
+                                decoration: InputDecoration(
+                                  labelText: 'E-mail',
+                                ),
+                                validator: (value) {
+                                  if (value.contains('@')) {
+                                    return null;
+                                  } else
+                                    return 'Enter valid e-mail address';
+                                },
+                                onSaved: (value) {
+                                  authData = AuthData(value, authData.password);
+                                },
+                                onFieldSubmitted: (_) {
+                                  FocusScope.of(context)
+                                      .requestFocus(widget._focusPassword);
+                                },
                               ),
-                              validator: (value) {
-                                if (value.contains('@')) {
-                                  return null;
-                                } else
-                                  return 'Enter valid e-mail address';
-                              },
-                              onSaved: (value) {
-                                authData = AuthData(value, authData.password);
-                              },
-                              onFieldSubmitted: (_) {
-                                FocusScope.of(context)
-                                    .requestFocus(widget._focusPassword);
-                              },
                             ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.only(left: 20, right: 20),
-                            child: TextFormField(
-                              controller: widget.password,
-                              focusNode: widget._focusPassword,
-                              textInputAction: isSignUp
-                                  ? TextInputAction.next
-                                  : TextInputAction.done,
-                              onFieldSubmitted: isSignUp
-                                  ? (_) {
-                                      FocusScope.of(context).requestFocus(
-                                          widget._focusConfirmPassword);
-                                    }
-                                  : (_) => saveState(),
-                              validator: (value) {
-                                if (value.length < 8)
-                                  return 'Password must be at least 8 characters';
-                                else
-                                  return null;
-                              },
-                              obscureText: true,
-                              decoration:
-                                  InputDecoration(labelText: 'Password'),
+                            Padding(
+                              padding: EdgeInsets.only(left: 20, right: 20),
+                              child: TextFormField(
+                                controller: widget.password,
+                                focusNode: widget._focusPassword,
+                                textInputAction: isSignUp
+                                    ? TextInputAction.next
+                                    : TextInputAction.done,
+                                onFieldSubmitted: isSignUp
+                                    ? (_) {
+                                        FocusScope.of(context).requestFocus(
+                                            widget._focusConfirmPassword);
+                                      }
+                                    : (_) => saveState(),
+                                validator: (value) {
+                                  if (value.length < 8)
+                                    return 'Password must be at least 8 characters';
+                                  else
+                                    return null;
+                                },
+                                obscureText: true,
+                                decoration:
+                                    InputDecoration(labelText: 'Password'),
+                              ),
                             ),
-                          ),
-                          isSignUp
-                              ? Padding(
-                                  padding: EdgeInsets.only(
-                                    left: 20,
-                                    right: 20,
-                                  ),
-                                  child: TextFormField(
-                                    onFieldSubmitted: (_) => saveState(),
-                                    obscureText: true,
-                                    focusNode: widget._focusConfirmPassword,
-                                    validator: (value) {
-                                      if (value != widget.password.text)
-                                        return 'Password doesn\'t match';
-                                      else
-                                        return null;
-                                    },
-                                    decoration: InputDecoration(
-                                        labelText: 'Confirm Password'),
-                                  ),
-                                )
-                              : SizedBox(),
-                        ],
+                            isSignUp
+                                ? Padding(
+                                    padding: EdgeInsets.only(
+                                      left: 20,
+                                      right: 20,
+                                    ),
+                                    child: FadeTransition(
+                                      opacity: _opacityAnimation,
+                                      child: TextFormField(
+                                        onFieldSubmitted: (_) => saveState(),
+                                        obscureText: true,
+                                        focusNode: widget._focusConfirmPassword,
+                                        validator: (value) {
+                                          if (value != widget.password.text)
+                                            return 'Password doesn\'t match';
+                                          else
+                                            return null;
+                                        },
+                                        decoration: InputDecoration(
+                                            labelText: 'Confirm Password'),
+                                      ),
+                                    ),
+                                  )
+                                : SizedBox(),
+                            Container(
+                              padding: EdgeInsets.only(top: 20, bottom: 5),
+                              child: isSignUp
+                                  ? Column(
+                                      children: <Widget>[
+                                        RaisedButton(
+                                          padding: EdgeInsets.only(
+                                              left: 35, right: 35),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                new BorderRadius.circular(18.0),
+                                          ),
+                                          onPressed: () => saveState(),
+                                          child: _isSavingState
+                                              ? Container(
+                                                  height: 30,
+                                                  child:
+                                                      CircularProgressIndicator(),
+                                                )
+                                              :  Text(
+                                            'SIGN UP',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 18,
+                                            ),
+                                          ),
+                                          color: Colors.purple,
+                                        ),
+                                        FlatButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              isSignUp = false;
+                                              _controller.reverse();
+                                            });
+                                          },
+                                          child: Text(
+                                            'LOGIN',
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                color: Colors.purple),
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  : Column(
+                                      children: <Widget>[
+                                        RaisedButton(
+                                          padding: EdgeInsets.only(
+                                              left: 35, right: 35),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                new BorderRadius.circular(18.0),
+                                          ),
+                                          onPressed: () => saveState(),
+                                          child: _isSavingState
+                                              ? Container(
+                                                  height: 30,
+                                                  child:
+                                                      CircularProgressIndicator(),
+                                                )
+                                              : Text(
+                                                  'LOGIN',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 18,
+                                                  ),
+                                                ),
+                                          color: Colors.purple,
+                                        ),
+                                        FlatButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              isSignUp = true;
+                                              _controller.forward();
+                                            });
+                                          },
+                                          child: Text(
+                                            'SIGN UP',
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                color: Colors.purple),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
 
-                    // Container with Buttons
-
-                    Container(
-                      padding: EdgeInsets.only(top: 20, bottom: 5),
-                      child: isSignUp
-                          ? Column(
-                              children: <Widget>[
-                                RaisedButton(
-                                  padding: EdgeInsets.only(left: 35, right: 35),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                        new BorderRadius.circular(18.0),
-                                  ),
-                                  onPressed: () => saveState(),
-                                  child: Text(
-                                    'SIGN UP',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                    ),
-                                  ),
-                                  color: Colors.purple,
-                                ),
-                                FlatButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      isSignUp = false;
-                                    });
-                                  },
-                                  child: Text(
-                                    'LOGIN',
-                                    style: TextStyle(
-                                        fontSize: 16, color: Colors.purple),
-                                  ),
-                                ),
-                              ],
-                            )
-                          : Column(
-                              children: <Widget>[
-                                RaisedButton(
-                                  padding: EdgeInsets.only(left: 35, right: 35),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                        new BorderRadius.circular(18.0),
-                                  ),
-                                  onPressed: () => saveState(),
-                                  child: Text(
-                                    'LOGIN',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                    ),
-                                  ),
-                                  color: Colors.purple,
-                                ),
-                                FlatButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      isSignUp = true;
-                                    });
-                                  },
-                                  child: Text(
-                                    'SIGN UP',
-                                    style: TextStyle(
-                                        fontSize: 16, color: Colors.purple),
-                                  ),
-                                ),
-                              ],
-                            ),
-                    ),
-                  ],
+                      // Container with Buttons
+                    ],
+                  ),
                 ),
               ),
             ],

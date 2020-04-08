@@ -15,63 +15,68 @@ class _OrdersViewState extends State<OrdersView> {
   @override
   Widget build(BuildContext context) {
     Orders orders = Provider.of<Orders>(context, listen: false);
-    return Column(
-      children: <Widget>[
-        Card(
-          elevation: 4,
-          child: ListTile(
-            title: Row(
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    SizedBox(width: 25,),
-                    Text(DateFormat.Hm().add_yMMMMd().format(orders.items[widget.index].dateTime),),
-                  ],
-                ),
-                Spacer(),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Chip(
-                    backgroundColor: Theme.of(context).primaryColor,
-                    label: Text(
-                      '\$' + orders.items[widget.index].totalPrice.toStringAsFixed(2),
-                      style: TextStyle(
-                          color: Theme.of(context).colorScheme.onBackground),
+    return Card(
+      elevation: 7,
+      child: Column(
+        children: <Widget>[
+          Container(
+            child: ListTile(
+              title: Row(
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      SizedBox(
+                        width: 25,
+                      ),
+                      Text(
+                        DateFormat.Hm()
+                            .add_yMMMMd()
+                            .format(orders.items[widget.index].dateTime),
+                      ),
+                    ],
+                  ),
+                  Spacer(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Chip(
+                      backgroundColor: Theme.of(context).primaryColor,
+                      label: Text(
+                        '\$' +
+                            orders.items[widget.index].totalPrice
+                                .toStringAsFixed(2),
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onBackground),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
+              trailing: IconButton(
+                  icon: Icon(Icons.arrow_drop_down),
+                  onPressed: () {
+                    setState(() {
+                      isDropDown = !isDropDown;
+                    });
+                  }),
             ),
-            trailing: IconButton(
-                icon: Icon(Icons.arrow_drop_down),
-                onPressed: () {
-                  setState(() {
-                    isDropDown = !isDropDown;
-                  });
-                }),
-          ),
-        ),
-        isDropDown
-            ? Row(
-                children: <Widget>[
-                  Spacer(),
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(5),
-                      color: Colors.black12,
-                    ),
-                    height: orders.items[widget.index].orderList.length <= 3
-                        ? orders.items[widget.index].orderList.length
-                                .toDouble() *
-                            90
-                        : 250,
-                    width: 300,
-                    child: ListView.builder(
-                      itemCount: orders.items[widget.index].orderList.length,
-                      itemBuilder: (ctx, listIndex) {
-                        return Card(
-                          elevation: 5,
-                          child: ListTile(
+          ), Column(
+                  children: <Widget>[
+                    AnimatedContainer(
+                      duration: Duration(milliseconds: 300),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        color: Colors.black12,
+                      ),
+                      height: !isDropDown ? 0 : orders.items[widget.index].orderList.length <= 3
+                          ? orders.items[widget.index].orderList.length
+                                  .toDouble() *
+                              75
+                          : 250,
+                      width: double.infinity,
+                      child: ListView.builder(
+                        itemCount: orders.items[widget.index].orderList.length,
+                        itemBuilder: (ctx, listIndex) {
+                          return ListTile(
                             leading: Text(
                               '# ' + (listIndex + 1).toString(),
                             ),
@@ -90,21 +95,24 @@ class _OrdersViewState extends State<OrdersView> {
                                       .orderList[listIndex].quantity
                                       .toString(),
                             ),
-                            trailing: Text('= ' +
-                                (orders.items[widget.index].orderList[listIndex]
-                                            .quantity *
-                                        orders.items[widget.index]
-                                            .orderList[listIndex].price)
-                                    .toString() + '\$',style: TextStyle(fontSize: 18),),
-                          ),
-                        );
-                      },
+                            trailing: Text(
+                              '= ' +
+                                  (orders.items[widget.index]
+                                              .orderList[listIndex].quantity *
+                                          orders.items[widget.index]
+                                              .orderList[listIndex].price)
+                                      .toString() +
+                                  '\$',
+                              style: TextStyle(fontSize: 18),
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
-              )
-            : SizedBox(),
-      ],
+                  ],
+                )
+        ],
+      ),
     );
   }
 }

@@ -228,7 +228,7 @@ class _EditProductState extends State<EditProduct> {
                               ),
                             ),
                             height: 120,
-                            width: 120,
+                            width: MediaQuery.of(context).size.width * 0.27,
                             child: imageUrlController.text.isEmpty
                                 ? Text('No image')
                                 : FittedBox(
@@ -239,7 +239,7 @@ class _EditProductState extends State<EditProduct> {
                           ),
                           Container(
                             margin: EdgeInsets.all(8),
-                            width: 230,
+                            width: MediaQuery.of(context).size.width * 0.6,
                             child: TextFormField(
                               decoration:
                                   InputDecoration(labelText: 'ImageURL'),
